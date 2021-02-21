@@ -1,0 +1,4 @@
+matrix.c:30:6:matrix_row	24	static
+matrix.c:43:9:matrix_scann	16	static
+matrix.c:58:5:matrix_search	16	static
+matrix.c:88:5:get_key	4	static
