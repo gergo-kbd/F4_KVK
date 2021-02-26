@@ -1,0 +1,6 @@
+code.c:27:6:pw_read	16	static
+code.c:36:5:compare_pw	16	static
+code.c:61:5:compare_pw_on	16	static
+code.c:86:6:bckspc	16	static
+code.c:104:6:hide_pw	16	static
+code.c:121:6:read_matrix	16	static
