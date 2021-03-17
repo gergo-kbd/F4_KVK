@@ -1,0 +1,8 @@
+lcd.c:11:6:LCD_clock	8	static
+lcd.c:22:6:LCD_write	16	static
+lcd.c:41:6:LCD_data	16	static
+lcd.c:47:6:LCD_cmd	16	static
+lcd.c:53:6:LCD_init	8	static
+lcd.c:73:6:LCD_string	16	static
+lcd.c:81:6:LCD_xy	24	static
+lcd.c:110:6:LCD_num	24	static
