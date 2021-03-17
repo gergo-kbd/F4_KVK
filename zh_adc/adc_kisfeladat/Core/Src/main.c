@@ -44,9 +44,12 @@
 ADC_HandleTypeDef hadc1;
 ADC_HandleTypeDef hadc2;
 
+TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 TIM_HandleTypeDef htim12;
 
+UART_HandleTypeDef huart3;
+char num[6];
 uint32_t adc_data_reg;
 uint32_t v_adc_ch3 = 0;
 uint16_t cnt=0;
@@ -61,6 +64,8 @@ static void MX_TIM4_Init(void);
 static void MX_TIM12_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_ADC2_Init(void);
+static void MX_TIM3_Init(void);
+static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 void HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef * htim){
 	if(cnt==2000){
@@ -68,6 +73,10 @@ void HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef * htim){
 		//HAL_Delay(50);
 		adc_data_reg = HAL_ADC_GetValue(&hadc2);
 		v_adc_ch3 = (3300*adc_data_reg)/4096;
+		sprintf(num, "%d", v_adc_ch3);
+		HAL_UART_Transmit(&huart3, num, sizeof(num), 10);
+		HAL_UART_Transmit(&huart3, "\n\r", sizeof("\n\r"), 10);
+
 
 		cnt=0;
 	}
@@ -113,6 +122,8 @@ int main(void)
   MX_TIM12_Init();
   MX_ADC1_Init();
   MX_ADC2_Init();
+  MX_TIM3_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   HAL_TIM_Base_Start_IT(&htim4);
   LCD_init();
@@ -124,44 +135,44 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
-
 	  LCD_xy(0,1);
 
 
-	  if((v_adc_ch3>=2476) && (v_adc_ch3<=3300))
-	  	  {
-		  LCD_xy(15,1); LCD_string("*");
-		  LCD_xy(15,2); LCD_string("*");
-		  LCD_xy(15,3); LCD_string("*");
-		  LCD_xy(15,4); LCD_string("*");
+	  	  if((v_adc_ch3>=2476) && (v_adc_ch3<=3300))
+	  	  	  {
+	  		  LCD_xy(15,1); LCD_string("*");
+	  		  LCD_xy(15,2); LCD_string("*");
+	  		  LCD_xy(15,3); LCD_string("*");
+	  		  LCD_xy(15,4); LCD_string("*");
 
-	  	  }
+	  	  	  }
 
-	  	  if((v_adc_ch3>=1651) && (v_adc_ch3<=2475))
-	  	  {
-	  		LCD_xy(15,1); LCD_string(" ");
-	  		LCD_xy(15,2); LCD_string("*");
-	  		LCD_xy(15,3); LCD_string("*");
-	  		LCD_xy(15,4); LCD_string("*");
-	  	  	}
+	  	  	  if((v_adc_ch3>=1651) && (v_adc_ch3<=2475))
+	  	  	  {
+	  	  		LCD_xy(15,1); LCD_string(" ");
+	  	  		LCD_xy(15,2); LCD_string("*");
+	  	  		LCD_xy(15,3); LCD_string("*");
+	  	  		LCD_xy(15,4); LCD_string("*");
+	  	  	  	}
 
-	  	  	if((v_adc_ch3<=1650) && (v_adc_ch3>=826))
-	  	  	 {
-	  	  	LCD_xy(15,1); LCD_string(" ");
-	  	  	LCD_xy(15,2); LCD_string(" ");
-	  	  	LCD_xy(15,3); LCD_string("*");
-	  	  	LCD_xy(15,4); LCD_string("*");
-	  	 }
+	  	  	  	if((v_adc_ch3<=1650) && (v_adc_ch3>=826))
+	  	  	  	 {
+	  	  	  	LCD_xy(15,1); LCD_string(" ");
+	  	  	  	LCD_xy(15,2); LCD_string(" ");
+	  	  	  	LCD_xy(15,3); LCD_string("*");
+	  	  	  	LCD_xy(15,4); LCD_string("*");
+	  	  	 }
 
-	  	  if(v_adc_ch3<825)
-	  	  {
+	  	  	  if(v_adc_ch3<825)
+	  	  	  {
 
-	  		LCD_xy(15,1); LCD_string(" ");
-	  		LCD_xy(15,2); LCD_string(" ");
-	  		LCD_xy(15,3); LCD_string(" ");
-	  		LCD_xy(15,4); LCD_string("*");
-	  	  }
+	  	  		LCD_xy(15,1); LCD_string(" ");
+	  	  		LCD_xy(15,2); LCD_string(" ");
+	  	  		LCD_xy(15,3); LCD_string(" ");
+	  	  		LCD_xy(15,4); LCD_string("*");
+	  	  	  }
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -175,6 +186,7 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
   */
@@ -201,6 +213,12 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3;
+  PeriphClkInitStruct.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1;
+  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
   {
     Error_Handler();
   }
@@ -307,6 +325,55 @@ static void MX_ADC2_Init(void)
 }
 
 /**
+  * @brief TIM3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM3_Init(void)
+{
+
+  /* USER CODE BEGIN TIM3_Init 0 */
+
+  /* USER CODE END TIM3_Init 0 */
+
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM3_Init 1 */
+
+  /* USER CODE END TIM3_Init 1 */
+  htim3.Instance = TIM3;
+  htim3.Init.Prescaler = 0;
+  htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim3.Init.Period = 65535;
+  htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim3, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM3_Init 2 */
+
+  /* USER CODE END TIM3_Init 2 */
+  HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
   * @brief TIM4 Initialization Function
   * @param None
   * @retval None
@@ -398,6 +465,41 @@ static void MX_TIM12_Init(void)
 }
 
 /**
+  * @brief USART3 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART3_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART3_Init 0 */
+
+  /* USER CODE END USART3_Init 0 */
+
+  /* USER CODE BEGIN USART3_Init 1 */
+
+  /* USER CODE END USART3_Init 1 */
+  huart3.Instance = USART3;
+  huart3.Init.BaudRate = 115200;
+  huart3.Init.WordLength = UART_WORDLENGTH_8B;
+  huart3.Init.StopBits = UART_STOPBITS_1;
+  huart3.Init.Parity = UART_PARITY_NONE;
+  huart3.Init.Mode = UART_MODE_TX_RX;
+  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART3_Init 2 */
+
+  /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -411,6 +513,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
